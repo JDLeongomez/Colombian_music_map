@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/nocturne-61e5fe03-be13-4099-b230-d573f0e2d402/styles.css">
+  <script src="_ds/nocturne-61e5fe03-be13-4099-b230-d573f0e2d402/_ds_bundle.js"></script>
+  <script src="https://unpkg.com/d3@7.9.0/dist/d3.min.js" integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/topojson-client@3.1.0/dist/topojson-client.min.js" integrity="sha384-Ukv1p/xTma6P4/2bY5KzWBw+ydSpXmhCMtyciIQVDJ1RmOxtCYNMF1uXT9T63H67" crossorigin="anonymous"></script>
+  <style>a { color: var(--color-accent); } a:hover { color: var(--color-accent-300); }</style>
+</helmet>
+<div style="min-height:100vh;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);padding:var(--space-8);display:flex;flex-direction:column;gap:var(--space-8);">
+
+  <header style="display:flex;flex-direction:column;gap:var(--space-4);">
+    <div style="max-width:640px;display:flex;flex-direction:column;gap:var(--space-3);">
+      <h1 style="margin:0;">Colombian music</h1>
+      <p style="margin:0;font-size:15px;color:var(--color-neutral-300);">Colombia's music divides broadly into six regions, each shaped by the country's geography and history. This page collects examples from each, plotted roughly where they originated. Select a point on the map to hear it and read more.</p>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:var(--space-6);">
+      <sc-for list="{{ regions }}" as="r" hint-placeholder-count="6">
+        <div style="display:flex;gap:var(--space-2);align-items:flex-start;max-width:220px;">
+          <span style="width:7px;height:7px;border-radius:50%;background:var(--color-accent);margin-top:6px;flex:none;"></span>
+          <div>
+            <div style="font-size:12px;font-weight:600;">{{ r.name }}</div>
+            <div style="font-size:11.5px;color:var(--color-neutral-400);line-height:1.4;">{{ r.blurb }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </header>
+
+  <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:var(--space-6);align-items:start;">
+    <div class="card elev-md" style="height:660px;padding:var(--space-4);">
+      <x-import component-from-global-scope="ColombiaMap" from="./ColombiaMap.jsx" tracks="{{ tracks }}" selected-id="{{ selectedId }}" on-select="{{ onSelect }}" on-active-position="{{ onActivePosition }}" hint-size="100%,100%" style="width:100%;height:100%;display:block;"></x-import>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:var(--space-6);">
+      <div class="card elev-md" ref="{{ playerRef }}" style="padding:var(--space-3);">
+        <div style="position:relative;width:100%;aspect-ratio:16/9;border-radius:var(--radius-md);overflow:hidden;background:var(--color-bg);display:flex;align-items:center;justify-content:center;">
+          <sc-if value="{{ embedSrc }}" hint-placeholder-val="{{ false }}">
+            <iframe src="{{ embedSrc }}" title="{{ activeTitle }}" style="width:100%;height:100%;border:0;position:absolute;inset:0;" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="true"></iframe>
+          </sc-if>
+          <sc-if value="{{ needsLink }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center;padding:var(--space-4);color:var(--color-neutral-400);font-size:13px;">No YouTube link added yet for this example.</div>
+          </sc-if>
+          <sc-if value="{{ hasActive }}" hint-placeholder-val="{{ true }}"></sc-if>
+          <sc-if value="{{ noneSelected }}" hint-placeholder-val="{{ true }}">
+            <div style="text-align:center;padding:var(--space-4);color:var(--color-neutral-500);font-size:13px;">Select an example on the map to play it here.</div>
+          </sc-if>
+        </div>
+      </div>
+
+      <div class="card elev-md" style="padding:var(--space-4);gap:var(--space-2);">
+        <sc-if value="{{ hasActive }}" hint-placeholder-val="{{ false }}">
+          <div class="card-kicker">{{ activeRegion }}</div>
+          <div class="card-title">{{ activeTitle }}</div>
+          <div class="hr" style="margin:var(--space-2) 0;"></div>
+          <div style="display:flex;flex-direction:column;gap:6px;font-size:13px;">
+            <div style="display:flex;justify-content:space-between;gap:var(--space-3);"><span style="color:var(--color-neutral-400);">Artist</span><span>{{ activeArtist }}</span></div>
+            <div style="display:flex;justify-content:space-between;gap:var(--space-3);"><span style="color:var(--color-neutral-400);">Year</span><span>{{ activeYear }}</span></div>
+            <div style="display:flex;justify-content:space-between;gap:var(--space-3);"><span style="color:var(--color-neutral-400);">Genre</span><span>{{ activeGenre }}</span></div>
+            <div style="display:flex;justify-content:space-between;gap:var(--space-3);"><span style="color:var(--color-neutral-400);">Location</span><span>{{ activeLocation }}</span></div>
+          </div>
+          <sc-if value="{{ watchUrl }}" hint-placeholder-val="{{ false }}">
+            <a href="{{ watchUrl }}" target="_blank" rel="noopener" class="btn btn-ghost" style="margin-top:var(--space-2);padding-left:0;">Watch on YouTube ↗</a>
+          </sc-if>
+        </sc-if>
+        <sc-if value="{{ noneSelected }}" hint-placeholder-val="{{ true }}">
+          <p style="margin:0;font-size:13px;color:var(--color-neutral-500);">Select an example on the map or from the list below to see its details.</p>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:var(--space-3);">
+    <h6 style="margin:0;color:var(--color-neutral-400);">All examples</h6>
+    <div style="display:flex;gap:var(--space-3);overflow-x:auto;padding-bottom:var(--space-2);">
+      <sc-for list="{{ chips }}" as="c" hint-placeholder-count="12">
+        <button onClick="{{ c.select }}" style="flex:none;min-width:190px;max-width:190px;text-align:left;display:flex;flex-direction:column;gap:2px;padding:var(--space-3);border-radius:var(--radius-md);border:1px solid var(--color-divider);cursor:pointer;font-family:var(--font-body);background:{{ c.chipBg }};color:{{ c.chipColor }};">
+          <span style="font-size:12.5px;font-weight:600;">{{ c.title }}</span>
+          <span style="font-size:11px;color:var(--color-neutral-400);">{{ c.artist }} · {{ c.region }}</span>
+        </button>
+      </sc-for>
+    </div>
+  </div>
+
+  <sc-if value="{{ showConnector }}" hint-placeholder-val="{{ false }}">
+    <svg style="position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:40;">
+      <path d="{{ connectorPath }}" style="fill:none;stroke:var(--color-accent);stroke-width:1.5;opacity:0.75;stroke-dasharray:5 5;"></path>
+    </svg>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1440, &quot;height&quot;: 1000}, &quot;autoplay&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Playback&quot;}, &quot;connectorStyle&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;curve&quot;, &quot;options&quot;: [&quot;curve&quot;, &quot;none&quot;], &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Playback&quot;}}">
+const REGIONS = [
+  { name: 'Caribbean', blurb: 'Coastal rhythms — cumbia, vallenato, champeta and bullerengue — shaped by African, Indigenous and Spanish heritage.' },
+  { name: 'Pacific', blurb: 'Afro-Colombian currulao and marimba music from the rainforested coast.' },
+  { name: 'Andean', blurb: 'Bambuco, pasillo and carranga from the highland heartland around Bogotá and the coffee region.' },
+  { name: 'Orinoquía', blurb: 'Joropo — harp, cuatro and vocals — from the eastern plains and cattle country.' },
+  { name: 'Amazonia', blurb: "Colombia's least commercially documented tradition, rooted in Indigenous communities along the river." },
+  { name: 'Insular', blurb: 'Calypso, reggae and mento from the archipelago of San Andrés, Providencia and Santa Catalina.' }
+];
+
+class Component extends DCLogic {
+  state = { tracks: [], selectedId: null, connector: null };
+  playerRef = React.createRef();
+
+  componentDidMount() {
+    import('./tracks-data.js').then(m => this.setState({ tracks: m.TRACKS }));
+    window.addEventListener('resize', this.recomputeConnector);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.recomputeConnector);
+  }
+
+  recomputeConnector = () => {
+    if (this.lastDotPos) this.updateConnector(this.lastDotPos);
+  };
+
+  updateConnector = (dotPos) => {
+    this.lastDotPos = dotPos;
+    if ((this.props.connectorStyle ?? 'curve') === 'none') { this.setState({ connector: null }); return; }
+    const el = this.playerRef.current;
+    if (!el) { this.setState({ connector: null }); return; }
+    const r = el.getBoundingClientRect();
+    this.setState({ connector: { x1: dotPos.x, y1: dotPos.y, x2: r.left + 18, y2: r.top + 18 } });
+  };
+
+  handleSelect = (id) => {
+    this.setState({ selectedId: id });
+  };
+
+  renderVals() {
+    const { tracks, selectedId, connector } = this.state;
+    const active = tracks.find(t => t.id === selectedId) || null;
+    const autoplay = this.props.autoplay ?? false;
+
+    const chips = tracks.map(t => ({
+      ...t,
+      select: () => this.handleSelect(t.id),
+      chipBg: t.id === selectedId ? 'var(--color-accent-800)' : 'var(--color-surface)',
+      chipColor: t.id === selectedId ? 'var(--color-accent-100)' : 'var(--color-text)'
+    }));
+
+    const connectorPath = connector
+      ? `M${connector.x1} ${connector.y1} C ${(connector.x1 + connector.x2) / 2} ${connector.y1}, ${(connector.x1 + connector.x2) / 2} ${connector.y2}, ${connector.x2} ${connector.y2}`
+      : '';
+
+    return {
+      tracks, chips, regions: REGIONS,
+      selectedId,
+      hasActive: !!active,
+      noneSelected: !active,
+      needsLink: !!active && !active.youtubeId,
+      embedSrc: active && active.youtubeId
+        ? `https://www.youtube-nocookie.com/embed/${active.youtubeId}?rel=0${autoplay ? '&autoplay=1&mute=1' : ''}`
+        : null,
+      watchUrl: active && active.youtubeId ? `https://www.youtube.com/watch?v=${active.youtubeId}` : null,
+      activeTitle: active ? active.title : '',
+      activeArtist: active ? active.artist : '',
+      activeYear: active ? (active.year ? String(active.year) : 'Traditional') : '',
+      activeGenre: active ? active.genre : '',
+      activeRegion: active ? active.region : '',
+      activeLocation: active ? active.location : '',
+      onSelect: this.handleSelect,
+      onActivePosition: this.updateConnector,
+      playerRef: this.playerRef,
+      showConnector: !!connector,
+      connectorPath
+    };
+  }
+}
+
+</script>
+</body>
+</html>

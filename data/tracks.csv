@@ -1,0 +1,22 @@
+id,title,artist,year,genre,region,department,location,lat,lon,youtubeId
+t1,La Gota Fría,Carlos Vives,1993,Vallenato,Caribbean,Cesar,"Valledupar, Cesar",10.46,-73.25,cMn3ortVBeE
+t2,Representative bullerengue recording,Petrona Martínez,2000,Bullerengue,Caribbean,Bolívar,"San Cayetano, Bolívar",9.95,-75.08,KvkfwJNbbR4
+t3,De Donde Vengo Yo,ChocQuibTown,2009,Afro-Colombian hip hop,Pacific,Chocó,"Condoto / Quibdó, Chocó",5.10,-76.65,yMS4J6Gp6e4
+t4,Te Invito,Herencia de Timbiquí,2013,Currulao / Pacific fusion,Pacific,Cauca,"Timbiquí, Cauca",2.77,-77.67,eaKG17XoQ48
+t5,La Cucharita,Jorge Velosa y Los Carrangueros de Ráquira,1976,Carranga,Andean,Boyacá,"Ráquira, Boyacá",5.54,-73.63,
+t6,Bolero Falaz,Aterciopelados,1995,Andean rock,Andean,"Bogotá, D.C.",Bogotá,4.71,-74.07,
+t7,Auténtica Llanera,Cimarrón,2019,Joropo,Orinoquía,Arauca,"Arauca, Arauca",7.05,-70.78,-5Ysgt8NziE
+t8,Carmentea,Luis Ariel Rey,1975,Joropo,Orinoquía,Arauca,"Tame, Arauca",6.46,-71.73,mtu0CDGgnZs
+t9,Amazonian popular song,Pedro Bernal,2010,Música popular amazonense,Amazonia,Amazonas,"Leticia, Amazonas",-4.15,-69.94,
+t10,Traditional Tikuna song,Tikuna community musicians,,Indigenous ceremonial music,Amazonia,Amazonas,"Puerto Nariño, Amazonas",-3.77,-70.30,
+t11,Sun a Shine,Elkin Robinson,2017,Reggae / Calypso,Insular,"Archipiélago de San Andrés, Providencia y Santa Catalina",Providencia,13.35,-81.37,I2X2U5YqfyY
+t12,Come 'Round,Elkin Robinson,2014,Reggae / Calypso,Insular,"Archipiélago de San Andrés, Providencia y Santa Catalina",San Andrés,12.58,-81.71,PBaYp8U_z7I
+t13,El Pescador,Totó La Momposina,,Cumbia / Tambora,Caribbean,Bolívar,"Mompós, Bolívar",9.24,-74.43,Grvt_18G3bU
+t14,Yo Voy Ganao,Systema Solar,2016,Champeta / Electro-tropical,Caribbean,Magdalena,"Taganga, Magdalena",11.27,-74.19,I9t4XTOwtEo
+t15,Amanece,Herencia de Timbiquí,2015,Currulao / Pacific fusion,Pacific,Cauca,"Timbiquí, Cauca",2.80,-77.64,BuBrF_npl_g
+t16,La Gata Golosa,Fulgencio García,1912,Pasillo,Andean,Cundinamarca,"Soacha, Cundinamarca",4.58,-74.22,cOMSNJB6c34
+t17,Lloré,Monsieur Periné,2015,Pop / Gypsy jazz fusion,Andean,"Bogotá, D.C.",Bogotá,4.65,-74.02,xyYUCGMZQ2g
+t18,Rompecabezas,Aterciopelados,2001,Andean rock,Andean,"Bogotá, D.C.",Bogotá,4.77,-74.12,H14uumkORzQ
+t19,Llanero Si Soy Llanero,Cholo Valderrama,,Joropo,Orinoquía,Arauca,"Cravo Norte, Arauca",6.30,-70.22,FZoMdjH0FdE
+t20,Tonada Amazónica,Indio Cuper,,Tonada,Amazonia,Amazonas,Amazonas,-3.90,-70.10,vV4n2q8764w
+t21,Coconut Woman,Coral Group,,Calypso,Insular,"Archipiélago de San Andrés, Providencia y Santa Catalina",San Andrés,12.55,-81.72,S18HEazgxeo
