@@ -4,6 +4,8 @@ Organised from a rough list into groups, with a note on what each would touch
 in the current codebase. Nothing here is implemented yet — this is a plan to
 pick up from, not a changelog.
 
+(Note: please review the .gitignore contents and make sure they are appropriate and complete before moving forward. Let me know once it's OK, before continuing to review or implement any of the cahnges descibed here)
+
 ## A. Intro / framing content
 
 The page currently opens straight into the region blurbs with no framing
