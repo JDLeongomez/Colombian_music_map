@@ -22,6 +22,7 @@ const els = {
 let allTracks = [];
 let visibleTracks = [];
 let selectedId = null;
+let hasEverSelected = false;
 let map = null;
 let player = null;
 const filters = { query: '', regions: new Set(), classifications: new Set() };
@@ -30,6 +31,15 @@ const CLASSIFICATION_HINTS = {
   Traditional: 'Genre and performance style stay close to the folk or ceremonial roots, with little to no modern fusion.',
   Fusion: 'A traditional genre or instrumentation deliberately blended with modern genres or production — jazz, pop, electronic, and so on.',
   'Non-traditional': 'A contemporary genre — rock, hip hop, electronic, synthpop — with little direct grounding in a traditional genre, even where the theme or culture is unmistakably Colombian.'
+};
+
+// A general-interest documentary with no single place to plot on the map —
+// suggested (cued, not autoplaying) before the visitor has picked anything
+// of their own; see renderDetail()/init() below.
+const FEATURED_VIDEO = {
+  title: 'Introduction to Colombian Music',
+  youtubeId: 'oRL44KZXuvE',
+  blurb: 'A short introduction to the regions, instruments and rhythms behind Colombian music — a good starting point before exploring the map.'
 };
 
 function escapeHtml(s) {
@@ -144,7 +154,17 @@ function renderChips() {
 function renderDetail() {
   const active = allTracks.find(t => t.id === selectedId);
   if (!active) {
-    els.detailPanel.innerHTML = '<p class="cx-detail-empty">Select an example on the map or from the list below to see its details.</p>';
+    if (!hasEverSelected) {
+      els.detailPanel.innerHTML = `
+        <div class="card-kicker">Documentary</div>
+        <div class="card-title">${escapeHtml(FEATURED_VIDEO.title)}</div>
+        <div class="hr" style="margin: var(--space-2) 0;"></div>
+        <p class="cx-detail-note">${escapeHtml(FEATURED_VIDEO.blurb)}</p>
+        <a class="btn btn-ghost cx-detail-link" href="https://www.youtube.com/watch?v=${FEATURED_VIDEO.youtubeId}" target="_blank" rel="noopener">Watch on YouTube ↗</a>
+      `;
+    } else {
+      els.detailPanel.innerHTML = '<p class="cx-detail-empty">Select an example on the map or from the list below to see its details.</p>';
+    }
     return;
   }
   const kickerColor = colorForRegionText(active.region);
@@ -180,7 +200,7 @@ function selectTrack(id) {
   renderChips();
   renderDetail();
   map.update({ selectedId });
-  if (active) player.play(active); else player.showEmpty();
+  if (active) { hasEverSelected = true; player.play(active); } else { player.showEmpty(); }
 }
 
 async function init() {
@@ -201,6 +221,7 @@ async function init() {
   renderDetail();
 
   player = createPlayer(els.playerMount);
+  player.suggest(FEATURED_VIDEO);
   map = await createMap(els.mapContainer);
   map.update({ tracks: visibleTracks, selectedId, onSelect: selectTrack, onAfterDraw: updateConnector });
 

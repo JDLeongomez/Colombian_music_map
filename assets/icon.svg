@@ -1,0 +1,23 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background: matches the site's dark navy -->
+  <rect x="0" y="0" width="100" height="100" rx="20" fill="#14161f"/>
+
+  <!-- Map pin outline -->
+  <path
+    d="M50,18
+       C64,18 75,29.5 75,43.5
+       C75,55 62,71 50,87
+       C38,71 25,55 25,43.5
+       C25,29.5 36,18 50,18
+       Z"
+    fill="none"
+    stroke="#e7e9f0"
+    stroke-width="5.5"
+    stroke-linejoin="round"
+  />
+
+  <!-- Sound bars, standing in for the "music" part -->
+  <rect x="40.5" y="39" width="5" height="15" rx="2.5" fill="#4fd1c5"/>
+  <rect x="47.5" y="30" width="5" height="24" rx="2.5" fill="#e7e9f0"/>
+  <rect x="54.5" y="41" width="5" height="13" rx="2.5" fill="#f6ad55"/>
+</svg>

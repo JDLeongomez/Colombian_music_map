@@ -97,6 +97,13 @@ const CAPITALS = [
 // shared point, connected back to it with a thin spoke line.
 const OVERLAP_PX = 15;
 
+// Groups of 3+ collapse into a single count badge, expanded only on hover or
+// click — pairs stay permanently fanned (their radius is small enough that
+// two adjacent dots don't read as clutter, so collapsing them buys little).
+const CLUSTER_BADGE_MIN = 3;
+const CLUSTER_HIT_PADDING = 14;
+const CLUSTER_HOVER_DEBOUNCE_MS = 120;
+
 function clusterDots(points) {
   const n = points.length;
   const parent = Array.from({ length: n }, (_, i) => i);
@@ -115,24 +122,28 @@ function clusterDots(points) {
     if (!groups.has(r)) groups.set(r, []);
     groups.get(r).push(points[i]);
   }
+  const clusters = [];
   for (const group of groups.values()) {
     if (group.length === 1) {
       const p = group[0];
-      p.fx = p.x; p.fy = p.y; p.spoke = null;
+      p.fx = p.x; p.fy = p.y; p.spoke = null; p.clusterKey = null;
       continue;
     }
     group.sort((a, b) => a.track.id.localeCompare(b.track.id));
     const cx = group.reduce((s, p) => s + p.x, 0) / group.length;
     const cy = group.reduce((s, p) => s + p.y, 0) / group.length;
     const radius = Math.min(10 + 2.5 * (group.length - 1), 26);
+    const key = group.length >= CLUSTER_BADGE_MIN ? group.map(p => p.track.id).join(',') : null;
     group.forEach((p, i) => {
       const angle = (2 * Math.PI * i / group.length) - Math.PI / 2;
       p.fx = cx + radius * Math.cos(angle);
       p.fy = cy + radius * Math.sin(angle);
       p.spoke = { cx, cy };
+      p.clusterKey = key;
     });
+    if (key) clusters.push({ key, cx, cy, radius, members: group });
   }
-  return points;
+  return { points, clusters };
 }
 
 export async function createMap(container) {
@@ -166,13 +177,34 @@ export async function createMap(container) {
   const labelLayer = svg.append('g');
   const spokeHaloLayer = svg.append('g');
   const spokeLayer = svg.append('g');
+  const clusterLayer = svg.append('g');
   const dotLayer = svg.append('g');
 
   const circleEls = {};
+  let hoverDebounceTimer = null;
   let projection = null;
   let pathGen = null;
   let size = { w: container.clientWidth || 800, h: container.clientHeight || 900 };
-  let current = { tracks: [], selectedId: null, hovered: null, onSelect: null };
+  let current = {
+    tracks: [], selectedId: null, hovered: null, onSelect: null,
+    hoveredCluster: null, pinnedCluster: null
+  };
+
+  // Shared by both the cluster hit-circle and individual member dots, so
+  // moving the pointer from one to the other doesn't collapse the cluster
+  // mid-hover (they're in different DOM subtrees, so mouseenter/mouseleave
+  // fire independently on each).
+  function setHoveredCluster(key) {
+    clearTimeout(hoverDebounceTimer);
+    hoverDebounceTimer = null;
+    if (current.hoveredCluster !== key) update({ hoveredCluster: key });
+  }
+  function clearHoveredClusterDebounced(key) {
+    clearTimeout(hoverDebounceTimer);
+    hoverDebounceTimer = setTimeout(() => {
+      if (current.hoveredCluster === key) update({ hoveredCluster: null });
+    }, CLUSTER_HOVER_DEBOUNCE_MS);
+  }
 
   function computeProjection(tracks) {
     const points = tracks.filter(t => t.lat != null && t.lon != null).map(t => [t.lon, t.lat]);
@@ -201,7 +233,7 @@ export async function createMap(container) {
   }
 
   function draw() {
-    const { tracks, selectedId, hovered, onSelect } = current;
+    const { tracks, selectedId, hovered, onSelect, hoveredCluster, pinnedCluster } = current;
     computeProjection(tracks);
 
     clipPath.attr('d', pathGen(countryOutline));
@@ -317,15 +349,72 @@ export async function createMap(container) {
       .text(d => d.name);
 
     const plottable = tracks.filter(t => t.lat != null && t.lon != null);
-    const positioned = clusterDots(plottable.map(t => {
+    const { points: positioned, clusters } = clusterDots(plottable.map(t => {
       const [x, y] = projection([t.lon, t.lat]);
       return { track: t, x, y };
     }));
 
+    // A filter change (or resize) can shrink/reshape a cluster the user had
+    // hovered or pinned open — its key won't exist in the fresh `clusters`
+    // list, so drop the stale reference rather than leaving it dangling.
+    const clusterKeys = new Set(clusters.map(c => c.key));
+    if (hoveredCluster != null && !clusterKeys.has(hoveredCluster)) current.hoveredCluster = null;
+    if (pinnedCluster != null && !clusterKeys.has(pinnedCluster)) current.pinnedCluster = null;
+
+    // A cluster expands on hover, on click (pinned), or — regardless of
+    // either — whenever it contains the currently-selected track, since
+    // getDotCenter() (feeding the connector line to the player card) needs
+    // that track's dot to actually exist in the DOM.
+    const expandedKeys = new Set(clusters
+      .filter(c => c.key === current.hoveredCluster || c.key === current.pinnedCluster ||
+        c.members.some(p => p.track.id === selectedId))
+      .map(c => c.key));
+
+    const visiblePoints = positioned.filter(p => p.clusterKey == null || expandedKeys.has(p.clusterKey));
+
+    const clusterSel = clusterLayer.selectAll('g').data(clusters, d => d.key);
+    clusterSel.exit().remove();
+    const clusterEntered = clusterSel.enter().append('g').attr('class', 'cx-cluster');
+    clusterEntered.append('circle').attr('class', 'cx-cluster-hit');
+    clusterEntered.append('circle').attr('class', 'cx-cluster-badge');
+    clusterEntered.append('text').attr('class', 'cx-cluster-count');
+
+    const clusterMerged = clusterEntered.merge(clusterSel);
+    clusterMerged.attr('data-cluster-key', d => d.key).each(function (d) {
+      const g = d3.select(this);
+      const isExpanded = expandedKeys.has(d.key);
+
+      g.select('.cx-cluster-hit')
+        .attr('cx', d.cx).attr('cy', d.cy).attr('r', d.radius + CLUSTER_HIT_PADDING)
+        .style('fill', 'transparent').style('pointer-events', 'all').style('cursor', 'pointer')
+        .on('mouseenter', () => setHoveredCluster(d.key))
+        .on('mouseleave', () => clearHoveredClusterDebounced(d.key))
+        .on('click', (event) => {
+          event.stopPropagation();
+          update({ pinnedCluster: current.pinnedCluster === d.key ? null : d.key });
+        });
+
+      g.select('.cx-cluster-badge')
+        .attr('cx', d.cx).attr('cy', d.cy).attr('r', 9)
+        .style('display', isExpanded ? 'none' : null)
+        .style('fill', 'var(--color-neutral-100)')
+        .style('stroke', 'var(--color-bg)').style('stroke-width', 1.5)
+        .style('pointer-events', 'none');
+
+      g.select('.cx-cluster-count')
+        .attr('x', d.cx).attr('y', d.cy)
+        .style('display', isExpanded ? 'none' : null)
+        .style('font', '700 9px var(--font-body)')
+        .style('fill', 'var(--color-bg)')
+        .style('text-anchor', 'middle').style('dominant-baseline', 'central')
+        .style('pointer-events', 'none')
+        .text(d.members.length);
+    });
+
     // Drawn as a dark halo plus a light line on top, rather than one
     // mid-tone stroke, so it stays legible over both the pale region fills
     // and the dark ocean/neighbour ground.
-    const spokeData = positioned.filter(p => p.spoke);
+    const spokeData = visiblePoints.filter(p => p.spoke);
     const spokeHaloSel = spokeHaloLayer.selectAll('line').data(spokeData, p => p.track.id);
     spokeHaloSel.join('line')
       .attr('x1', p => p.spoke.cx).attr('y1', p => p.spoke.cy)
@@ -342,7 +431,7 @@ export async function createMap(container) {
       .style('stroke-width', 0.9)
       .style('opacity', 0.85);
 
-    const dotSel = dotLayer.selectAll('g').data(positioned, p => p.track.id);
+    const dotSel = dotLayer.selectAll('g').data(visiblePoints, p => p.track.id);
     dotSel.exit().each(p => { delete circleEls[p.track.id]; }).remove();
     const entered = dotSel.enter().append('g');
     entered.append('circle').attr('class', 'cx-ring');
@@ -350,7 +439,7 @@ export async function createMap(container) {
     entered.append('text').attr('class', 'cx-dot-label');
 
     const merged = entered.merge(dotSel);
-    merged.each(function (p) {
+    merged.attr('data-cluster-key', p => p.clusterKey || null).each(function (p) {
       const d = p.track;
       const g = d3.select(this);
       const x = p.fx, y = p.fy;
@@ -385,9 +474,18 @@ export async function createMap(container) {
         .style('filter', isActive ? 'drop-shadow(0 0 6px var(--color-accent))' : 'none');
       circleEls[d.id] = dot.node();
 
-      dot.on('mouseenter', () => update({ hovered: d.id }))
-        .on('mouseleave', () => update({ hovered: null }))
-        .on('click', () => onSelect && onSelect(d.id));
+      dot.on('mouseenter', () => {
+          clearTimeout(hoverDebounceTimer);
+          update(p.clusterKey != null ? { hovered: d.id, hoveredCluster: p.clusterKey } : { hovered: d.id });
+        })
+        .on('mouseleave', () => {
+          update({ hovered: null });
+          if (p.clusterKey != null) clearHoveredClusterDebounced(p.clusterKey);
+        })
+        .on('click', () => {
+          if (p.clusterKey != null && current.pinnedCluster === p.clusterKey) update({ pinnedCluster: null });
+          onSelect && onSelect(d.id);
+        });
 
       g.select('.cx-dot-label')
         .attr('x', x + 10).attr('y', y - 10)
@@ -420,6 +518,16 @@ export async function createMap(container) {
   ro.observe(container);
   svg.attr('viewBox', `0 0 ${size.w} ${size.h}`);
 
+  // Clicking anywhere outside a pinned-open cluster (its badge or its own
+  // fanned-out member dots — both carry data-cluster-key) collapses it.
+  function onDocumentClick(event) {
+    if (!current.pinnedCluster) return;
+    if (!event.target.closest(`[data-cluster-key="${current.pinnedCluster}"]`)) {
+      update({ pinnedCluster: null });
+    }
+  }
+  document.addEventListener('click', onDocumentClick);
+
   return {
     update,
     getDotCenter(id) {
@@ -428,6 +536,10 @@ export async function createMap(container) {
       const r = el.getBoundingClientRect();
       return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
     },
-    destroy() { ro.disconnect(); svg.remove(); }
+    destroy() {
+      ro.disconnect();
+      document.removeEventListener('click', onDocumentClick);
+      svg.remove();
+    }
   };
 }

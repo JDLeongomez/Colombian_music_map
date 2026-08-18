@@ -1,0 +1,86 @@
+name: Suggest an addition
+description: Propose a track to add to the map (or point out one that's wrong).
+title: "[Addition]: "
+labels: [addition]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting something! Fill in what you know — it's fine to leave fields
+        blank if you're not sure (e.g. exact coordinates or a YouTube link).
+  - type: input
+    id: title
+    attributes:
+      label: Track title
+    validations:
+      required: true
+  - type: input
+    id: artist
+    attributes:
+      label: Artist / performer
+    validations:
+      required: true
+  - type: input
+    id: year
+    attributes:
+      label: Year
+      description: "Free text is fine, e.g. \"Mid 1940's\" for undated traditional pieces."
+  - type: input
+    id: genre
+    attributes:
+      label: Genre
+      description: e.g. Vallenato, Currulao
+    validations:
+      required: true
+  - type: dropdown
+    id: classification
+    attributes:
+      label: Classification
+      description: See "A note on this selection" on the page for what each category means.
+      options:
+        - Traditional
+        - Fusion
+        - Non-traditional
+        - Not sure
+    validations:
+      required: true
+  - type: dropdown
+    id: region
+    attributes:
+      label: Region
+      description: If it genuinely straddles two, say so in "Anything else" below.
+      options:
+        - Caribbean
+        - Pacific
+        - Andean
+        - Orinoquía
+        - Amazonia
+        - Insular
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: department
+    attributes:
+      label: Department
+      description: The Colombian department it's most associated with, if known.
+  - type: input
+    id: location
+    attributes:
+      label: Location
+      description: Town, city or general area where it originated.
+  - type: input
+    id: coordinates
+    attributes:
+      label: Coordinates
+      description: Decimal lat, lon if you have them — otherwise leave blank.
+  - type: input
+    id: youtube
+    attributes:
+      label: YouTube link
+      description: A performance video, ideally live.
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      description: Context, why it belongs, sources, or anything that didn't fit above.

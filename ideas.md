@@ -6,6 +6,41 @@ changelog — see "Done" below for a short record of what's already shipped.
 
 ## Done (2026-08-17 – 2026-08-18)
 
+- **Featured documentary** — a general-interest documentary with no single
+  place to plot ("Introduction to Colombian Music") is now suggested (cued,
+  not autoplaying) in the player on first load, with a "Documentary" card in
+  the detail panel, until the visitor picks a real track — after that it
+  never comes back uninvited (a filter clearing the selection goes to the
+  plain empty state, not back to the documentary, so it can't interrupt
+  something the visitor is actively watching). Lives as a small `FEATURED_VIDEO`
+  constant in `js/app.js`, not in `tracks.csv` — no lat/lon/region/
+  classification to force in for one item. `js/player.js`'s `play()` gained
+  an `{ autoplay }` option and a `suggest()` wrapper for this. This resolves
+  the "separate section vs. `type` column" question in "Documentary & dance
+  videos" below, but only for content with no location — see that item for
+  what's left (dance videos, and other documentaries that DO have a fairly
+  precise place, e.g. alabaos del Pacífico/Bojayá, Carnaval de Blancos y
+  Negros de Pasto).
+- **Cluster count badge** — map dots that shared a spot used to always fan
+  out with connector spokes, all visible at once (worst case: Bogotá, 6-8
+  tracks depending on viewport). Groups of 3+ now collapse into a single
+  numbered badge, expanding to the fanned dots on hover or click/tap, and
+  collapsing on click-away — pairs are unaffected (still always fanned, too
+  small to bother collapsing). Selecting a track inside a collapsed cluster
+  (e.g. from the chip list) force-expands it, since the connector line to
+  the player needs a real dot to point at. Entirely contained in
+  `js/map.js` (`clusterDots`, plus a new `clusterLayer`) — no changes to
+  `app.js`, CSS, or data.
+- **Locator inset** — a small fixed-corner graphic in the map card showing
+  Colombia (accent colour) against a muted silhouette of the Americas
+  (Mexico down to Argentina/Chile; Canada omitted to keep the shape tight),
+  for readers unfamiliar with where Colombia sits. Built as a static SVG
+  (`assets/locator-americas.svg`) baked once from `world-atlas`'s 110m
+  country topology (decoded and reprojected offline, not at runtime — no
+  new runtime dependency), independent of the main map's projection so it
+  doesn't move or resize with it. Known island outliers (Alaska, Hawaii,
+  Galápagos, Easter Island, Juan Fernández) excluded by hand for a cleaner
+  silhouette; San Andrés/Providencia kept since they're Colombia's own.
 - **Connector line on scroll** — fixed; recomputes on scroll, not just resize.
   Also recoloured to neutral white (was the accent colour, which got
   confusing once dots stopped using it too — see below).
@@ -53,30 +88,27 @@ changelog — see "Done" below for a short record of what's already shipped.
   looked like it belonged to Insular. Unselected dots are now neutral white;
   the accent colour is reserved for the one currently-selected dot.
 
-## A. Map enhancements
+## A. Track data & classification
 
-1. **Locator inset** — a small corner graphic showing where Colombia sits in
-   the Americas, for readers unfamiliar with its location. Simplest version:
-   a tiny static SVG/PNG in a fixed corner of the map card, independent of
-   the main projection. (The separate San Andrés/Providencia inset this used
-   to sit alongside is no longer needed — see "Insular region visibility"
-   in Done.)
-
-## B. Track data & classification
-
-2. **Documentary & dance videos** — a way to include non-"one region, one
-   song" content, e.g. the 9-minute documentary on Colombian traditional
-   music, and videos showing dance alongside the music. These don't fit the
-   current one-dot-per-track-per-place model cleanly. Worth deciding:
-   - a separate small "further watching" section outside the map (simplest),
-     vs.
-   - a new `type` column (`song` / `documentary` / `dance`) so they can still
-     appear as map dots (a documentary might not have one place, though —
-     may need a "national" placement or its own non-map list).
+1. **Documentary & dance videos with an actual place** — the general
+   documentary with no location is handled (see Done above). Still open:
+   videos that DO have a fairly precise place, floated so far:
+   - a mini-documentary on alabaos del Pacífico (possibly Bojayá),
+   - one on the Carnaval de Blancos y Negros de Pasto,
+   - one on Petronio Álvarez (name as given — worth double-checking the
+     exact title/festival when building this),
+   - dance videos alongside the music generally.
+   Unlike the general documentary, these likely belong as real map dots
+   (they have a place), which probably means a `type` column
+   (`song`/`documentary`/`dance`) in `tracks.csv` so the existing
+   region/classification/filename machinery mostly keeps working — but
+   classification (traditional/fusion/non-traditional) and the dot-shape
+   encoding may not make sense for a documentary, so that'll need a decision
+   too. None of these are confirmed/ready yet — titles and YouTube links
+   needed before building.
 
 ## Open questions for next session
 
-- Documentary/dance videos (B2): confirm placement — map dot vs. separate
-  section — before building it.
-- Locator inset (A1): confirm whether a simple static image is enough, or if
-  it should be a live-rendered mini-map matching the main map's style.
+- Track data for A1: get titles + YouTube links for the location-specific
+  documentary/dance videos, and decide how classification (or its absence)
+  works for a documentary dot vs. a song dot.

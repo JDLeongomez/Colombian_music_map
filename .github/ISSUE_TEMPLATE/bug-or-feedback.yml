@@ -1,0 +1,12 @@
+name: Bug, error or other feedback
+description: Something's broken, wrong, or you have a comment or idea about the site.
+title: ""
+labels: []
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: What's wrong, or what's on your mind?
+      description: A screenshot helps if it's a visual/display bug.
+    validations:
+      required: true

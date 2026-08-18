@@ -51,7 +51,7 @@ export function createPlayer(container) {
     `);
   }
 
-  async function play(track) {
+  async function play(track, { autoplay = true } = {}) {
     if (!track.youtubeId) { showNoLink(); return; }
     const token = ++requestToken;
     setContent(`<div class="cx-player-mount"><div id="${mountId}"></div></div>`);
@@ -60,7 +60,7 @@ export function createPlayer(container) {
 
     player = new YT.Player(mountId, {
       videoId: track.youtubeId,
-      playerVars: { rel: 0, autoplay: 1, origin: window.location.origin },
+      playerVars: { rel: 0, autoplay: autoplay ? 1 : 0, origin: window.location.origin },
       events: {
         onError: (e) => {
           if (token !== requestToken) return;
@@ -70,6 +70,12 @@ export function createPlayer(container) {
     });
   }
 
+  // Cued but not playing — used for the featured/suggested video on first
+  // load, so it doesn't start making noise before the visitor asks for it.
+  function suggest(track) {
+    return play(track, { autoplay: false });
+  }
+
   showEmpty();
-  return { play, showEmpty };
+  return { play, suggest, showEmpty };
 }
