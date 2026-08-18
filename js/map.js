@@ -2,14 +2,7 @@
 // neighbouring countries and track dots into an SVG. Vanilla JS +
 // d3-geo/topojson-client (loaded as pinned CDN globals in index.html) — no
 // React, no build step.
-const REGION_COLORS = {
-  Caribbean: '#5B8DB8',
-  Pacific: '#3FA0A0',
-  Andean: '#A9744E',
-  Orinoquia: '#D4B44A',
-  Amazonia: '#3F9152',
-  Insular: '#9184D9'
-};
+import { REGION_COLORS } from '../data/regions.js';
 
 // Precomputed (offline, from the real region/country geometry) so each
 // label sits inside its shape even for narrow or concave regions.
@@ -40,6 +33,108 @@ const WATER_LABELS = [
 const MARGIN_LON = 1.6;
 const MARGIN_LAT = 1.3;
 
+// San Andrés and Providencia's real geometry is only a couple of pixels
+// across at this map's scale, so its region fill is effectively invisible —
+// drawn instead as a fixed-radius circle (screen px, not projected) roughly
+// centred between the two islands, so Insular reads as a region and not
+// just stray dots in open sea.
+const INSULAR_CENTER = [-81.54, 12.965];
+const INSULAR_HALO_RADIUS = 30;
+
+// Classification reads through dot shape, not colour: circle = traditional
+// (also the fallback for unclassified tracks), triangle = fusion,
+// square = non-traditional — three silhouettes chosen to stay distinct
+// from one another even at the map's small dot size.
+export const CLASSIFICATION_SHAPES = {
+  Traditional: d3.symbolCircle,
+  Fusion: d3.symbolTriangle,
+  'Non-traditional': d3.symbolSquare
+};
+
+// Department capitals, purely for orientation — styled well below the track
+// dots so they read as background reference, not content. Cundinamarca's
+// capital is Bogotá too, so it shares Bogotá D.C.'s point rather than
+// duplicating it.
+const CAPITALS = [
+  { name: 'Leticia', lon: -69.940, lat: -4.215 },
+  { name: 'Medellín', lon: -75.581, lat: 6.244 },
+  { name: 'Arauca', lon: -70.763, lat: 7.089 },
+  { name: 'Barranquilla', lon: -74.781, lat: 10.968 },
+  { name: 'Cartagena', lon: -75.479, lat: 10.391 },
+  { name: 'Tunja', lon: -73.367, lat: 5.535 },
+  { name: 'Manizales', lon: -75.518, lat: 5.068 },
+  { name: 'Florencia', lon: -75.606, lat: 1.615 },
+  { name: 'Yopal', lon: -72.396, lat: 5.338 },
+  { name: 'Popayán', lon: -76.614, lat: 2.444 },
+  { name: 'Valledupar', lon: -73.253, lat: 10.463 },
+  { name: 'Quibdó', lon: -76.658, lat: 5.694 },
+  { name: 'Montería', lon: -75.878, lat: 8.748 },
+  { name: 'Bogotá', lon: -74.072, lat: 4.711 },
+  { name: 'Inírida', lon: -67.923, lat: 3.865 },
+  { name: 'San José del Guaviare', lon: -72.640, lat: 2.570 },
+  { name: 'Neiva', lon: -75.281, lat: 2.927 },
+  { name: 'Riohacha', lon: -72.907, lat: 11.544 },
+  { name: 'Santa Marta', lon: -74.199, lat: 11.240 },
+  { name: 'Villavicencio', lon: -73.626, lat: 4.142 },
+  { name: 'Pasto', lon: -77.281, lat: 1.209 },
+  { name: 'Cúcuta', lon: -72.507, lat: 7.894 },
+  { name: 'Mocoa', lon: -76.648, lat: 1.147 },
+  { name: 'Armenia', lon: -75.681, lat: 4.535 },
+  { name: 'Pereira', lon: -75.694, lat: 4.814 },
+  { name: 'San Andrés', lon: -81.700, lat: 12.584 },
+  { name: 'Bucaramanga', lon: -73.122, lat: 7.119 },
+  { name: 'Sincelejo', lon: -75.397, lat: 9.303 },
+  { name: 'Ibagué', lon: -75.232, lat: 4.438 },
+  { name: 'Cali', lon: -76.532, lat: 3.452 },
+  { name: 'Mitú', lon: -70.233, lat: 1.198 },
+  { name: 'Puerto Carreño', lon: -67.486, lat: 6.189 }
+];
+
+// Tracks from the same city/region often share (near-)identical coordinates
+// — plain projection would stack their dots exactly on top of one another,
+// hiding all but the last-drawn one. Group dots that would render within
+// OVERLAP_PX of each other and fan them out on a small circle around their
+// shared point, connected back to it with a thin spoke line.
+const OVERLAP_PX = 15;
+
+function clusterDots(points) {
+  const n = points.length;
+  const parent = Array.from({ length: n }, (_, i) => i);
+  function find(a) { while (parent[a] !== a) { parent[a] = parent[parent[a]]; a = parent[a]; } return a; }
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      if (Math.hypot(points[i].x - points[j].x, points[i].y - points[j].y) < OVERLAP_PX) {
+        const ra = find(i), rb = find(j);
+        if (ra !== rb) parent[ra] = rb;
+      }
+    }
+  }
+  const groups = new Map();
+  for (let i = 0; i < n; i++) {
+    const r = find(i);
+    if (!groups.has(r)) groups.set(r, []);
+    groups.get(r).push(points[i]);
+  }
+  for (const group of groups.values()) {
+    if (group.length === 1) {
+      const p = group[0];
+      p.fx = p.x; p.fy = p.y; p.spoke = null;
+      continue;
+    }
+    group.sort((a, b) => a.track.id.localeCompare(b.track.id));
+    const cx = group.reduce((s, p) => s + p.x, 0) / group.length;
+    const cy = group.reduce((s, p) => s + p.y, 0) / group.length;
+    const radius = Math.min(10 + 2.5 * (group.length - 1), 26);
+    group.forEach((p, i) => {
+      const angle = (2 * Math.PI * i / group.length) - Math.PI / 2;
+      p.fx = cx + radius * Math.cos(angle);
+      p.fy = cy + radius * Math.sin(angle);
+      p.spoke = { cx, cy };
+    });
+  }
+  return points;
+}
+
 export async function createMap(container) {
   const [deptGeoJSON, outlineFeature, regionsGeoJSON, neighboursGeoJSON, reliefBounds] = await Promise.all([
     fetch('assets/colombia-departments.geojson').then(r => r.json()),
@@ -65,9 +160,12 @@ export async function createMap(container) {
   const deptLayer = svg.append('g');
   const regionBorderLayer = svg.append('g');
   const countryBorder = svg.append('path').attr('fill', 'none');
+  const capitalLayer = svg.append('g');
   const neighbourLabelLayer = svg.append('g');
   const waterLabelLayer = svg.append('g');
   const labelLayer = svg.append('g');
+  const spokeHaloLayer = svg.append('g');
+  const spokeLayer = svg.append('g');
   const dotLayer = svg.append('g');
 
   const circleEls = {};
@@ -125,12 +223,19 @@ export async function createMap(container) {
       .style('stroke-width', 0.75)
       .style('stroke-opacity', 0.6);
 
-    const regionSel = regionLayer.selectAll('path').data(regionFeatures, d => d.properties.region);
+    const mainlandRegionFeatures = regionFeatures.filter(f => f.properties.region !== 'Insular');
+
+    const regionSel = regionLayer.selectAll('path').data(mainlandRegionFeatures, d => d.properties.region);
     regionSel.join('path')
       .attr('d', pathGen)
       .style('fill', d => REGION_COLORS[d.properties.region] || 'var(--color-neutral-700)')
       .style('fill-opacity', 0.4)
       .style('stroke', 'none');
+
+    const [insularX, insularY] = projection(INSULAR_CENTER);
+    regionLayer.selectAll('circle.cx-insular-fill').data([null]).join('circle').attr('class', 'cx-insular-fill')
+      .attr('cx', insularX).attr('cy', insularY).attr('r', INSULAR_HALO_RADIUS)
+      .style('fill', REGION_COLORS.Insular).style('fill-opacity', 0.4).style('stroke', 'none');
 
     const deptSel = deptLayer.selectAll('path').data(deptFeatures, d => d.properties.code);
     deptSel.join('path')
@@ -140,13 +245,40 @@ export async function createMap(container) {
       .style('stroke-width', 0.5)
       .style('stroke-opacity', 0.45);
 
-    const regionBorderSel = regionBorderLayer.selectAll('path').data(regionFeatures, d => d.properties.region);
+    const regionBorderSel = regionBorderLayer.selectAll('path').data(mainlandRegionFeatures, d => d.properties.region);
     regionBorderSel.join('path')
       .attr('d', pathGen)
       .style('fill', 'none')
       .style('stroke', d => REGION_COLORS[d.properties.region])
       .style('stroke-width', 1.1)
       .style('stroke-opacity', 0.6);
+
+    regionBorderLayer.selectAll('circle.cx-insular-border').data([null]).join('circle').attr('class', 'cx-insular-border')
+      .attr('cx', insularX).attr('cy', insularY).attr('r', INSULAR_HALO_RADIUS)
+      .style('fill', 'none').style('stroke', REGION_COLORS.Insular).style('stroke-width', 1.1).style('stroke-opacity', 0.6);
+
+    const capitalSel = capitalLayer.selectAll('g').data(CAPITALS, d => d.name);
+    const capitalEnter = capitalSel.enter().append('g');
+    capitalEnter.append('circle');
+    capitalEnter.append('text');
+    const capitalMerged = capitalEnter.merge(capitalSel);
+    capitalMerged.each(function (d) {
+      const g = d3.select(this);
+      const [x, y] = projection([d.lon, d.lat]);
+      g.select('circle')
+        .attr('cx', x).attr('cy', y).attr('r', 1.6)
+        .style('fill', 'var(--color-neutral-500)')
+        .style('opacity', 0.7);
+      g.select('text')
+        .attr('x', x + 5).attr('y', y + 3)
+        .style('font', '400 7.5px var(--font-body)')
+        .style('fill', 'var(--color-neutral-500)')
+        .style('paint-order', 'stroke')
+        .style('stroke', 'var(--color-bg)')
+        .style('stroke-width', '2.5px')
+        .style('pointer-events', 'none')
+        .text(d.name);
+    });
 
     const neighbourLabelSel = neighbourLabelLayer.selectAll('text').data(NEIGHBOUR_LABELS, d => d.name);
     neighbourLabelSel.join('text')
@@ -185,17 +317,43 @@ export async function createMap(container) {
       .text(d => d.name);
 
     const plottable = tracks.filter(t => t.lat != null && t.lon != null);
-    const dotSel = dotLayer.selectAll('g').data(plottable, d => d.id);
-    dotSel.exit().each(d => { delete circleEls[d.id]; }).remove();
+    const positioned = clusterDots(plottable.map(t => {
+      const [x, y] = projection([t.lon, t.lat]);
+      return { track: t, x, y };
+    }));
+
+    // Drawn as a dark halo plus a light line on top, rather than one
+    // mid-tone stroke, so it stays legible over both the pale region fills
+    // and the dark ocean/neighbour ground.
+    const spokeData = positioned.filter(p => p.spoke);
+    const spokeHaloSel = spokeHaloLayer.selectAll('line').data(spokeData, p => p.track.id);
+    spokeHaloSel.join('line')
+      .attr('x1', p => p.spoke.cx).attr('y1', p => p.spoke.cy)
+      .attr('x2', p => p.fx).attr('y2', p => p.fy)
+      .style('stroke', 'var(--color-bg)')
+      .style('stroke-width', 2.25)
+      .style('opacity', 0.65);
+
+    const spokeSel = spokeLayer.selectAll('line').data(spokeData, p => p.track.id);
+    spokeSel.join('line')
+      .attr('x1', p => p.spoke.cx).attr('y1', p => p.spoke.cy)
+      .attr('x2', p => p.fx).attr('y2', p => p.fy)
+      .style('stroke', 'var(--color-neutral-100)')
+      .style('stroke-width', 0.9)
+      .style('opacity', 0.85);
+
+    const dotSel = dotLayer.selectAll('g').data(positioned, p => p.track.id);
+    dotSel.exit().each(p => { delete circleEls[p.track.id]; }).remove();
     const entered = dotSel.enter().append('g');
     entered.append('circle').attr('class', 'cx-ring');
-    entered.append('circle').attr('class', 'cx-dot');
+    entered.append('path').attr('class', 'cx-dot');
     entered.append('text').attr('class', 'cx-dot-label');
 
     const merged = entered.merge(dotSel);
-    merged.each(function (d) {
+    merged.each(function (p) {
+      const d = p.track;
       const g = d3.select(this);
-      const [x, y] = projection([d.lon, d.lat]);
+      const x = p.fx, y = p.fy;
       const isActive = d.id === selectedId;
       const isHover = d.id === hovered;
       const r = isActive ? 7 : isHover ? 6 : 4.5;
@@ -206,10 +364,23 @@ export async function createMap(container) {
         .style('fill', 'none').style('stroke', 'var(--color-accent)')
         .style('stroke-width', 1).style('opacity', 0.5);
 
+      // Classification (traditional/fusion/non-traditional) reads through
+      // the dot's shape rather than a second colour, so it doesn't compete
+      // with the region colours already carried by dot position/fill.
+      //
+      // Unselected dots are neutral (not the accent colour) since the
+      // accent happens to equal the Insular region's fill — a purple dot
+      // over the Andean region would otherwise read as "this belongs to
+      // Insular". The accent is reserved for the one currently-selected dot.
+      const accentColor = isActive ? 'var(--color-accent-100)' : 'var(--color-neutral-100)';
+      const shapeType = CLASSIFICATION_SHAPES[d.classification] || d3.symbolCircle;
+
       const dot = g.select('.cx-dot')
-        .attr('cx', x).attr('cy', y).attr('r', r)
-        .style('fill', isActive ? 'var(--color-accent-100)' : 'var(--color-accent)')
-        .style('stroke', 'var(--color-bg)').style('stroke-width', 1.5)
+        .attr('d', d3.symbol().type(shapeType).size(Math.PI * r * r)())
+        .attr('transform', `translate(${x},${y})`)
+        .style('fill', accentColor)
+        .style('stroke', 'var(--color-bg)')
+        .style('stroke-width', 1.5)
         .style('cursor', 'pointer')
         .style('filter', isActive ? 'drop-shadow(0 0 6px var(--color-accent))' : 'none');
       circleEls[d.id] = dot.node();

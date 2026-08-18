@@ -16,10 +16,12 @@ add a row:
 | `id` | any unique short id, e.g. `t13` |
 | `title` | track title |
 | `artist` | performer |
-| `year` | release year (leave blank for traditional/undated pieces) |
+| `year` | release year (leave blank for traditional/undated pieces) — free text, so things like `Mid 1940's` work too |
 | `genre` | e.g. `Vallenato`, `Currulao` |
-| `region` | one of `Caribbean`, `Pacific`, `Andean`, `Orinoquía`, `Amazonia`, `Insular` |
-| `department` | the Colombian department name, matching `assets/colombia-departments.topojson` |
+| `classification` | `Traditional`, `Fusion` or `Non-traditional` — shown in the detail panel and drives the map dot's shape (circle / triangle / square); leave blank to fall back to a circle |
+| `note` | optional short free-text aside shown under the details, e.g. `Live performance by Alejo Durán – 1990's` — leave blank if there's nothing to add |
+| `region` | one of `Caribbean`, `Pacific`, `Andean`, `Orinoquía`, `Amazonia`, `Insular` — display text only (it doesn't drive the map's colouring), so a track that genuinely straddles two can use e.g. `Andean / Amazonia` |
+| `department` | the Colombian department name, matching `assets/colombia-departments.geojson` |
 | `location` | free-text place description shown in the detail panel |
 | `lat`, `lon` | decimal coordinates for the map dot |
 | `youtubeId` | the part of the YouTube URL after `v=` (leave blank if there's no video yet) |

@@ -16,7 +16,27 @@
       <h1>Colombian music</h1>
       <p>Colombia's music divides broadly into six regions, each shaped by the country's geography and history. This page collects examples from each, plotted roughly where they originated. Select a point on the map to hear it and read more.</p>
     </div>
+    <details class="cx-note">
+      <summary>A note on this selection</summary>
+      <p>Colombia is sometimes called the Land of a Thousand Rhythms: over 1,025 folkloric rhythms have been documented, shaped by a geography of mountains, rainforest, plains and coasts that kept regions musically distinct from one another, and by different a mix of Indigenous, African and European influences (I lean towards recognising the depth of Afro-Colombian influence in particular). This page only scratches the surface of that.</p>
+      <p>I have a background in music, but I'm not a musicologist or an expert in Colombian traditional music; treat this as a personal, incomplete set of examples, not a survey. I tend to prefer videos of live performances, and I lean towards older and more traditional music over very modern styles: you won't find Shakira, Karol G or reggaetón here, even though reggaetón dominates popular Colombian music today. The goal isn't to be comprehensive, just to point at some of the variety.</p>
+      <p>Each example is also tagged traditional, fusion or non-traditional (shown on the map as a circle, triangle or square):</p>
+      <dl class="cx-classification-legend">
+        <div><dt>Traditional</dt><dd>Genre and performance style stay close to the folk or ceremonial roots, with little to no modern fusion.</dd></div>
+        <div><dt>Fusion</dt><dd>A traditional genre or instrumentation deliberately blended with modern genres or production — jazz, pop, electronic, and so on.</dd></div>
+        <div><dt>Non-traditional</dt><dd>A contemporary genre — rock, hip hop, electronic, synthpop — with little direct grounding in a traditional genre, even where the theme or culture is unmistakably Colombian.</dd></div>
+      </dl>
+      <p>If you think something's wrong, missing, or could be better, the source is on GitHub: corrections and additions are welcome: <a href="https://github.com/JDLeongomez/Colombian_music_interactive_map" target="_blank" rel="noopener">github.com/JDLeongomez/Colombian_music_interactive_map</a>.</p>
+    </details>
     <div id="region-list" class="cx-region-list"></div>
+    <div class="cx-filters">
+      <input id="search-input" class="input cx-search" type="search" placeholder="Search by title, artist or genre…" aria-label="Search examples" autocomplete="off">
+      <div id="region-filter" class="cx-region-filter"></div>
+      <div class="cx-filter-divider"></div>
+      <div id="classification-filter" class="cx-classification-filter"></div>
+      <button id="clear-filters" class="btn btn-ghost cx-clear-filters" type="button" hidden>Clear filters</button>
+    </div>
+    <p class="cx-dot-legend">On the map: circles are traditional, triangles are fusion, squares are non-traditional.</p>
   </header>
 
   <div class="cx-main-grid">
@@ -36,7 +56,7 @@
   </div>
 
   <div style="display:flex;flex-direction:column;gap:var(--space-3);">
-    <h6 class="cx-chips-heading">All examples</h6>
+    <h6 id="chips-heading" class="cx-chips-heading">All examples</h6>
     <div id="chip-list" class="cx-chip-row"></div>
   </div>
 </div>

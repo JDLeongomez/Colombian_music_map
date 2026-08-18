@@ -83,6 +83,15 @@ button { font: inherit; }
 .btn-ghost:hover { background: color-mix(in srgb, var(--color-accent) 10%, transparent); }
 .btn-ghost:active { background: color-mix(in srgb, var(--color-accent) 18%, transparent); }
 
+.input {
+  min-height: 34px; padding: 6px 10px; font: inherit; font-size: 13px;
+  color: var(--color-text); caret-color: var(--color-accent);
+  background: var(--color-surface); border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+}
+.input:hover { border-color: color-mix(in srgb, var(--color-text) 45%, transparent); }
+.input:focus-visible { border-color: var(--color-accent); outline-offset: 0; }
+
 .card {
   display: flex; flex-direction: column; gap: var(--space-2);
   padding: var(--space-3); border-radius: var(--radius-md); background: var(--color-surface);
@@ -94,18 +103,83 @@ button { font: inherit; }
 /* — page layout — */
 .cx-page {
   min-height: 100vh; padding: var(--space-8);
+  max-width: 1360px; margin: 0 auto;
   display: flex; flex-direction: column; gap: var(--space-8);
 }
-.cx-intro { max-width: 640px; display: flex; flex-direction: column; gap: var(--space-3); }
+.cx-intro { display: flex; flex-direction: column; gap: var(--space-3); }
 .cx-intro p { font-size: 15px; color: var(--color-neutral-300); }
+.cx-note {
+  background: color-mix(in srgb, var(--color-accent) 7%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--color-accent) 18%, transparent);
+  border-radius: var(--radius-md); padding: var(--space-4);
+}
+.cx-note summary {
+  cursor: pointer; font-size: 12px; font-weight: 600; letter-spacing: 0.04em;
+  color: var(--color-neutral-300);
+}
+.cx-note summary:hover { color: var(--color-neutral-100); }
+.cx-note p {
+  margin: var(--space-2) 0 0; font-size: 13px; line-height: 1.5;
+  color: var(--color-neutral-400);
+}
+.cx-note p + p { margin-top: var(--space-2); }
+.cx-note a { color: var(--color-accent-300); }
+.cx-classification-legend {
+  margin: var(--space-2) 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px;
+}
+.cx-classification-legend div { display: flex; gap: var(--space-2); }
+.cx-classification-legend dt {
+  flex: none; width: 82px; font-size: 12px; font-weight: 600; color: var(--color-neutral-300);
+}
+.cx-classification-legend dd {
+  margin: 0; font-size: 13px; line-height: 1.5; color: var(--color-neutral-400);
+}
 
-.cx-region-list { display: flex; flex-wrap: wrap; gap: var(--space-6); }
-.cx-region-item { display: flex; gap: var(--space-2); align-items: flex-start; max-width: 220px; }
+.cx-region-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-6); }
+@media (max-width: 640px) { .cx-region-list { grid-template-columns: 1fr; } }
+.cx-region-item { display: flex; gap: var(--space-2); align-items: flex-start; }
 .cx-region-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-accent); margin-top: 6px; flex: none; }
 .cx-region-name { font-size: 12px; font-weight: 600; }
 .cx-region-blurb { font-size: 11.5px; color: var(--color-neutral-400); line-height: 1.4; }
 
-.cx-main-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: var(--space-6); align-items: start; }
+.cx-filters { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.cx-search { width: 240px; max-width: 100%; }
+.cx-region-filter { display: flex; flex-wrap: wrap; gap: 6px; }
+.cx-region-toggle {
+  font-family: var(--font-body); font-size: 12px; cursor: pointer;
+  padding: 5px 10px; border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--region-color) 45%, transparent);
+  background: transparent; color: var(--color-neutral-400);
+}
+.cx-region-toggle:hover { background: color-mix(in srgb, var(--region-color) 14%, transparent); color: var(--color-text); }
+.cx-region-toggle.is-active {
+  background: color-mix(in srgb, var(--region-color) 28%, transparent);
+  border-color: var(--region-color); color: var(--color-text);
+}
+.cx-filter-divider { width: 1px; align-self: stretch; background: var(--color-divider); }
+.cx-classification-filter { display: flex; flex-wrap: wrap; gap: 6px; }
+.cx-classification-toggle {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--font-body); font-size: 12px; cursor: pointer;
+  padding: 5px 10px; border-radius: 999px;
+  border: 1px solid var(--color-divider);
+  background: transparent; color: var(--color-neutral-400);
+}
+.cx-classification-toggle svg { flex: none; }
+.cx-classification-toggle:hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); color: var(--color-text); }
+.cx-classification-toggle.is-active {
+  background: color-mix(in srgb, var(--color-accent) 22%, transparent);
+  border-color: var(--color-accent); color: var(--color-text);
+}
+.cx-clear-filters { margin-left: auto; }
+.cx-clear-filters[hidden] { display: none; }
+.cx-dot-legend { margin: 0; font-size: 11px; color: var(--color-neutral-500); }
+
+/* The map's own content is close to square (Colombia's bounds, plus a fixed
+   margin, projected at a fixed card height) — capping its column stops it
+   stretching into dead space on wide screens, and hands that width to the
+   player/detail column instead. */
+.cx-main-grid { display: grid; grid-template-columns: minmax(320px, 620px) minmax(320px, 1fr); gap: var(--space-6); align-items: start; }
 @media (max-width: 900px) { .cx-main-grid { grid-template-columns: 1fr; } }
 
 .cx-map-card { height: 660px; padding: var(--space-4); }
@@ -133,11 +207,13 @@ button { font: inherit; }
 .cx-detail-rows { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
 .cx-detail-row { display: flex; justify-content: space-between; gap: var(--space-3); }
 .cx-detail-row span:first-child { color: var(--color-neutral-400); }
+.cx-detail-note { margin: var(--space-2) 0 0; font-size: 12px; font-style: italic; color: var(--color-neutral-400); line-height: 1.4; }
 .cx-detail-link { margin-top: var(--space-2); padding-left: 0; }
 .cx-detail-empty { margin: 0; font-size: 13px; color: var(--color-neutral-500); }
 
 .cx-chips-heading { margin: 0; color: var(--color-neutral-400); }
 .cx-chip-row { display: flex; gap: var(--space-3); overflow-x: auto; padding-bottom: var(--space-2); }
+.cx-chip-empty { margin: 0; font-size: 13px; color: var(--color-neutral-500); }
 .cx-chip {
   flex: none; min-width: 190px; max-width: 190px; text-align: left;
   display: flex; flex-direction: column; gap: 2px; padding: var(--space-3);
@@ -150,4 +226,4 @@ button { font: inherit; }
 .cx-chip-meta { font-size: 11px; color: var(--color-neutral-400); }
 
 #connector-svg { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 40; display: none; }
-#connector-path { fill: none; stroke: var(--color-accent); stroke-width: 1.5; opacity: 0.75; stroke-dasharray: 5 5; }
+#connector-path { fill: none; stroke: var(--color-neutral-100); stroke-width: 1.5; opacity: 0.75; stroke-dasharray: 5 5; }

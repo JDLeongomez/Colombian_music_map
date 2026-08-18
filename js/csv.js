@@ -29,7 +29,9 @@ export function parseCSV(text) {
   }
   if (field.length || row.length) { row.push(field); rows.push(row); }
 
-  const nonEmpty = rows.filter(r => r.length > 1 || (r.length === 1 && r[0] !== ''));
+  // Drop rows where every field is blank — spreadsheet apps often leave a
+  // trailing all-empty line (or a trailing comma on every row) on save.
+  const nonEmpty = rows.filter(r => r.some(field => field !== ''));
   if (!nonEmpty.length) return [];
   const header = nonEmpty[0].map(h => h.trim());
   return nonEmpty.slice(1).map(cols => {

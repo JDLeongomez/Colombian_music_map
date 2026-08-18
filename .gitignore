@@ -9,6 +9,15 @@ Desktop.ini
 *.swp
 *.swo
 
+# Claude Code local session settings (machine-specific permissions, not shared config)
+.claude/settings.local.json
+
+# Python (used for one-off asset regeneration scripts, e.g. map/relief data)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
 # Local environment files and secrets
 .env
 .env.*
