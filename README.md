@@ -1,5 +1,17 @@
 # Colombian music — interactive map
 
+<p align="center">
+  <a href="https://jdleongomez.github.io/Colombian_music_map/">
+    <img src="assets/icon.svg" width="72" height="72" alt="">
+  </a>
+  <br>
+  <a href="https://jdleongomez.github.io/Colombian_music_map/"><b>jdleongomez.github.io/Colombian_music_map</b></a>
+  <br><br>
+  <a href="https://jdleongomez.github.io/Colombian_music_map/">
+    <img src="assets/qr-code.svg" width="140" height="140" alt="QR code linking to the Colombian Music Map">
+  </a>
+</p>
+
 A single-page site that introduces Colombia's six musical regions, plots
 recorded examples on a relief map, and plays them via YouTube.
 
@@ -61,4 +73,5 @@ required.
 - `assets/colombia-regions.geojson` — the 6 natural regions' actual physiographic shapes (hand-fitted to their real boundaries, not department lines, since several departments straddle two regions in reality). This is what the map colours.
 - `assets/neighbouring-countries.geojson` — rough outlines of Panama, Venezuela, Ecuador, Peru and Brazil, cropped to a margin around Colombia's own border (not the full countries) for context at the map's edges (source: [world-atlas](https://github.com/topojson/world-atlas) 110m).
 - `assets/colombia-relief.png` (+ `-bounds.json`) — pre-processed elevation relief, cropped and tinted from Natural Earth's public-domain "Cross-blended Hypso with Shaded Relief" raster.
+- `assets/qr-code.svg` — QR code linking to the live site, used in this README; not loaded by the app itself.
 - `design-source/` — the original Claude Design prototype, kept for visual reference.
