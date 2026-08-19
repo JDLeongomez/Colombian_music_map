@@ -1,4 +1,4 @@
-# Colombian music — interactive map
+# Colombian music map
 
 <p align="center">
   <a href="https://jdleongomez.github.io/Colombian_music_map/">
