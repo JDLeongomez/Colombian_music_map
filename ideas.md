@@ -87,28 +87,40 @@ changelog — see "Done" below for a short record of what's already shipped.
   fill; once Insular became clearly visible (above), every dot on the map
   looked like it belonged to Insular. Unselected dots are now neutral white;
   the accent colour is reserved for the one currently-selected dot.
+- **Alabaos del Pacífico (t38–t40)** — added as three ordinary rows in
+  `tracks.csv`, no schema change. Settled the "documentary with a place"
+  question in the simplest way available: no new `type` column, no fourth
+  dot shape — a documentary segment with a real location and genre
+  (`t38`, the Pogue cantadoras of Bojayá) just gets a normal classification
+  (`Traditional`) and renders as an ordinary circle, same as a song; the
+  documentary nature is only noted in the `note` field. Paired with two
+  performance videos from Timbiquí, Cauca (Elena Hinestroza — traditional;
+  Nidia Góngora's "En los Manglares" — a contemporary alabao
+  reinterpretation, fusion), which share exact coordinates and fan as a
+  pair like any other co-located pair. This resolves the "type column vs.
+  separate section" architecture question for any future addition that
+  (like this one) has both a real place and a classifiable genre — only a
+  documentary with *no* place (already handled by `FEATURED_VIDEO`) or one
+  that resists classification entirely would still need separate handling.
 
 ## A. Track data & classification
 
 1. **Documentary & dance videos with an actual place** — the general
-   documentary with no location is handled (see Done above). Still open:
-   videos that DO have a fairly precise place, floated so far:
-   - a mini-documentary on alabaos del Pacífico (possibly Bojayá),
+   documentary with no location is handled (see Done above), and the
+   alabaos del Pacífico documentary segment is done too (see Done above) —
+   it turned out not to need special handling at all. Still open:
    - one on the Carnaval de Blancos y Negros de Pasto,
    - one on Petronio Álvarez (name as given — worth double-checking the
      exact title/festival when building this),
    - dance videos alongside the music generally.
-   Unlike the general documentary, these likely belong as real map dots
-   (they have a place), which probably means a `type` column
-   (`song`/`documentary`/`dance`) in `tracks.csv` so the existing
-   region/classification/filename machinery mostly keeps working — but
-   classification (traditional/fusion/non-traditional) and the dot-shape
-   encoding may not make sense for a documentary, so that'll need a decision
-   too. None of these are confirmed/ready yet — titles and YouTube links
-   needed before building.
+   Same approach as the alabaos entries should work: plain rows in
+   `tracks.csv`, classified normally, no schema change — unless one of
+   these turns out to have no clean single location or resists
+   traditional/fusion/non-traditional classification, in which case revisit
+   the `type`-column idea then. None of these are confirmed/ready yet —
+   titles and YouTube links needed before building.
 
 ## Open questions for next session
 
-- Track data for A1: get titles + YouTube links for the location-specific
-  documentary/dance videos, and decide how classification (or its absence)
-  works for a documentary dot vs. a song dot.
+- Track data for A1: get titles + YouTube links for the Carnaval de Pasto /
+  Petronio Álvarez / dance videos.

@@ -2,9 +2,13 @@
 // <iframe src="..."> tag. Two things caused "Error 153 / configuration
 // error" in the previous prototype: (1) no `origin` was ever sent, which the
 // API sets automatically and correctly, and (2) there was no way to detect a
-// genuinely embed-disabled video, so YouTube's own broken frame showed
-// through instead of a friendly fallback. onError below covers that case.
-const EMBED_DISABLED_CODES = new Set([101, 150]);
+// genuinely unplayable video, so YouTube's own broken frame showed through
+// instead of a friendly fallback. onError below covers that case.
+// 100 = video not found (removed or marked private); 101/150 = owner has
+// disabled embedded playback (150 is the same restriction, sent for some
+// clients/regions instead of 101) — all three leave the iframe permanently
+// blank with no error the visitor can see, so all three get the fallback.
+const UNPLAYABLE_CODES = new Set([100, 101, 150]);
 
 let apiReadyPromise = null;
 function loadYouTubeAPI() {
@@ -64,7 +68,7 @@ export function createPlayer(container) {
       events: {
         onError: (e) => {
           if (token !== requestToken) return;
-          if (EMBED_DISABLED_CODES.has(e.data)) showFallback(track);
+          if (UNPLAYABLE_CODES.has(e.data)) showFallback(track);
         }
       }
     });
