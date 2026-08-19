@@ -46,6 +46,19 @@ function escapeHtml(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+// "City, Department" for the detail panel — but department is skipped when
+// it's just a longer form of the same place (e.g. location "Bogotá" next to
+// department "Bogotá, D.C.", or location/department both "Arauca"), so we
+// don't end up with "Bogotá, Bogotá, D.C.".
+function formatLocation({ location, department }) {
+  if (!department) return location || '';
+  if (!location) return department;
+  const norm = s => s.trim().toLowerCase();
+  const deptHead = norm(department.split(',')[0]);
+  if (norm(location) === deptHead || norm(location) === norm(department)) return department;
+  return `${location}, ${department}`;
+}
+
 function renderRegions() {
   els.regionList.innerHTML = REGIONS.map(r => `
     <div class="cx-region-item">
@@ -177,7 +190,7 @@ function renderDetail() {
       <div class="cx-detail-row"><span>Year</span><span>${escapeHtml(active.year || 'Traditional')}</span></div>
       <div class="cx-detail-row"><span>Genre</span><span>${escapeHtml(active.genre)}</span></div>
       ${active.classification ? `<div class="cx-detail-row"><span>Classification</span><span title="${escapeHtml(CLASSIFICATION_HINTS[active.classification] || '')}">${escapeHtml(active.classification)}</span></div>` : ''}
-      <div class="cx-detail-row"><span>Location</span><span>${escapeHtml(active.location)}</span></div>
+      <div class="cx-detail-row"><span>Location</span><span>${escapeHtml(formatLocation(active))}</span></div>
     </div>
     ${active.note ? `<p class="cx-detail-note">${escapeHtml(active.note)}</p>` : ''}
     ${active.youtubeId ? `<a class="btn btn-ghost cx-detail-link" href="https://www.youtube.com/watch?v=${active.youtubeId}" target="_blank" rel="noopener">Watch on YouTube ↗</a>` : ''}
