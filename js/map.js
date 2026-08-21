@@ -449,9 +449,10 @@ export async function createMap(container) {
 
       g.select('.cx-ring')
         .attr('cx', x).attr('cy', y).attr('r', 13)
+        .classed('is-active', isActive)
         .style('display', isActive ? null : 'none')
-        .style('fill', 'none').style('stroke', 'var(--color-accent)')
-        .style('stroke-width', 1).style('opacity', 0.5);
+        .style('fill', 'none').style('stroke', 'var(--color-accent-100)')
+        .style('stroke-width', 1.5).style('opacity', 0.85);
 
       // Classification (traditional/fusion/non-traditional) reads through
       // the dot's shape rather than a second colour, so it doesn't compete

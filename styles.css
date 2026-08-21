@@ -110,6 +110,11 @@ button { font: inherit; }
 .cx-intro p { font-size: 15px; color: var(--color-neutral-300); }
 .cx-title-row { display: flex; align-items: center; gap: var(--space-3); }
 .cx-logo { flex: none; width: 64px; height: 64px; }
+.cx-title-block { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--space-2); }
+.cx-byline { margin: 0; font-size: 12px; }
+.cx-byline-label { color: color-mix(in srgb, var(--color-neutral-400) 25%, transparent); }
+.cx-byline a { color: color-mix(in srgb, var(--color-accent-300) 40%, transparent); }
+.cx-byline a:hover { color: var(--color-accent-300); }
 .cx-github-link {
   margin-left: auto; flex: none; display: flex; align-items: center; justify-content: center;
   width: 34px; height: 34px; border-radius: 50%; color: var(--color-neutral-400);
@@ -234,7 +239,11 @@ button { font: inherit; }
 .cx-detail-link { margin-top: var(--space-2); padding-left: 0; }
 .cx-detail-empty { margin: 0; font-size: 13px; color: var(--color-neutral-500); }
 
+.cx-chips-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
 .cx-chips-heading { margin: 0; color: var(--color-neutral-400); }
+.cx-autoplay-toggle.is-active { background: color-mix(in srgb, var(--color-accent) 22%, transparent); }
+.cx-autoplay-toggle:disabled { opacity: 0.4; cursor: default; pointer-events: none; }
+.cx-autoplay-note { margin: 0; font-size: 11px; color: var(--color-neutral-500); }
 .cx-chip-row { display: flex; gap: var(--space-3); overflow-x: auto; padding-bottom: var(--space-2); }
 .cx-chip-empty { margin: 0; font-size: 13px; color: var(--color-neutral-500); }
 .cx-chip {
@@ -247,6 +256,18 @@ button { font: inherit; }
 .cx-chip.is-active { background: var(--color-accent-800); color: var(--color-accent-100); }
 .cx-chip-title { font-size: 12.5px; font-weight: 600; }
 .cx-chip-meta { font-size: 11px; color: var(--color-neutral-400); }
+
+@keyframes cx-ring-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.4); opacity: 0.3; }
+}
+.cx-ring.is-active {
+  transform-box: fill-box; transform-origin: center;
+  animation: cx-ring-pulse 1.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cx-ring.is-active { animation: none; }
+}
 
 #connector-svg { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 40; display: none; }
 #connector-path { fill: none; stroke: var(--color-neutral-100); stroke-width: 1.5; opacity: 0.75; stroke-dasharray: 5 5; }

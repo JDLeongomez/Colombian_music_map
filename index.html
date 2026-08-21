@@ -31,7 +31,10 @@
     <div class="cx-intro">
       <div class="cx-title-row">
         <img src="assets/icon.svg" alt="" width="80" height="80" class="cx-logo">
-        <h1>Colombian Music Map</h1>
+        <div class="cx-title-block">
+          <h1>Colombian Music Map</h1>
+          <p class="cx-byline"><span class="cx-byline-label">by</span> <a href="https://jdleongomez.info" target="_blank" rel="noopener">Juan David Leongómez</a></p>
+        </div>
         <a class="cx-github-link" href="https://github.com/JDLeongomez/Colombian_music_map/issues/new/choose" target="_blank" rel="noopener" aria-label="Suggest an addition, leave a comment, or report an issue on GitHub" title="Suggest, comment or report an issue on GitHub">
           <svg viewBox="0 0 16 16" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
         </a>
@@ -44,11 +47,11 @@
       <p>I'm <a href="https://jdleongomez.info" target="_blank" rel="noopener">Juan David Leongómez</a>. I have a background in music, but I'm not a musicologist or an expert in Colombian traditional music; treat this as a personal, incomplete set of examples, not a survey. I tend to prefer videos of live performances, and I lean towards older and more traditional music over very modern styles: you won't find Shakira, Karol G or reggaetón here, even though reggaetón dominates popular Colombian music today. The goal isn't to be comprehensive, just to point at some of the variety.</p>
       <p>Each example is also tagged traditional, fusion or non-traditional (shown on the map as a circle, triangle or square):</p>
       <dl class="cx-classification-legend">
-        <div><dt>Traditional</dt><dd>Genre and performance style stay close to the folk or ceremonial roots, with little to no modern fusion.</dd></div>
-        <div><dt>Fusion</dt><dd>A traditional genre or instrumentation deliberately blended with modern genres or production — jazz, pop, electronic, and so on.</dd></div>
-        <div><dt>Non-traditional</dt><dd>A contemporary genre — rock, hip hop, electronic, synthpop — with little direct grounding in a traditional genre, even where the theme or culture is unmistakably Colombian.</dd></div>
+        <div><dt>Traditional</dt><dd>Genre and performance style stay close to openthe folk or ceremonial roots, with little to no modern fusion.</dd></div>
+        <div><dt>Fusion</dt><dd>A traditional genre or instrumentation deliberately blended with modern genres or production (jazz, pop, electronic, and so on).</dd></div>
+        <div><dt>Non-traditional</dt><dd>A contemporary genre (rock, hip hop, electronic, synthpop) with little direct grounding in a traditional genre, even where the theme or culture is unmistakably Colombian.</dd></div>
       </dl>
-      <p>If you think something's wrong, missing, or could be better, corrections and additions are welcome — click the GitHub icon next to the title to open an issue.</p>
+      <p>If you think something's wrong, missing, or could be better, corrections and additions are welcome. Click <a href="https://github.com/JDLeongomez/Colombian_music_map/issues/new/choose" target="_blank" rel="noopener">here</a>.</p>
     </details>
     <div id="region-list" class="cx-region-list"></div>
     <div class="cx-filters">
@@ -82,7 +85,11 @@
   </div>
 
   <div style="display:flex;flex-direction:column;gap:var(--space-3);">
-    <h6 id="chips-heading" class="cx-chips-heading">All examples</h6>
+    <div class="cx-chips-row">
+      <h6 id="chips-heading" class="cx-chips-heading">All examples</h6>
+      <button id="autoplay-toggle" class="btn btn-ghost cx-autoplay-toggle" type="button">▶ Play all</button>
+    </div>
+    <p id="autoplay-note" class="cx-autoplay-note" hidden>Playing through the examples currently shown, in order — it loops back to the start when it reaches the end.</p>
     <div id="chip-list" class="cx-chip-row"></div>
   </div>
 </div>

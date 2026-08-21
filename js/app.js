@@ -15,6 +15,8 @@ const els = {
   detailPanel: document.getElementById('detail-panel'),
   chipsHeading: document.getElementById('chips-heading'),
   chipList: document.getElementById('chip-list'),
+  autoplayToggle: document.getElementById('autoplay-toggle'),
+  autoplayNote: document.getElementById('autoplay-note'),
   connectorSvg: document.getElementById('connector-svg'),
   connectorPath: document.getElementById('connector-path')
 };
@@ -23,6 +25,7 @@ let allTracks = [];
 let visibleTracks = [];
 let selectedId = null;
 let hasEverSelected = false;
+let autoplayMode = false;
 let map = null;
 let player = null;
 const filters = { query: '', regions: new Set(), classifications: new Set() };
@@ -133,10 +136,12 @@ function applyFilters() {
   if (selectedId && !visibleTracks.some(t => t.id === selectedId)) {
     selectedId = null;
     player.showEmpty();
+    if (autoplayMode) setAutoplay(false);
   }
   const active = !!filters.query || filters.regions.size > 0 || filters.classifications.size > 0;
   els.clearFilters.hidden = !active;
   els.chipsHeading.textContent = active ? `${visibleTracks.length} of ${allTracks.length} examples` : 'All examples';
+  els.autoplayToggle.disabled = !visibleTracks.length;
 
   renderRegionFilter();
   renderClassificationFilter();
@@ -213,7 +218,22 @@ function selectTrack(id) {
   renderChips();
   renderDetail();
   map.update({ selectedId });
-  if (active) { hasEverSelected = true; player.play(active); } else { player.showEmpty(); }
+  if (active) { hasEverSelected = true; player.play(active, { onEnded: playNextAutoplay }); } else { player.showEmpty(); }
+}
+
+// Advances to the next track in the currently visible (filtered) list when a
+// video finishes, looping back to the start — a no-op unless autoplay is on.
+function playNextAutoplay() {
+  if (!autoplayMode || !visibleTracks.length) return;
+  const idx = visibleTracks.findIndex(t => t.id === selectedId);
+  selectTrack(visibleTracks[(idx + 1) % visibleTracks.length].id);
+}
+
+function setAutoplay(on) {
+  autoplayMode = on;
+  els.autoplayToggle.textContent = on ? '⏸ Stop autoplay' : '▶ Play all';
+  els.autoplayToggle.classList.toggle('is-active', on);
+  els.autoplayNote.hidden = !on;
 }
 
 async function init() {
@@ -227,6 +247,7 @@ async function init() {
     lat: row.lat !== '' ? Number(row.lat) : null,
     lon: row.lon !== '' ? Number(row.lon) : null
   }));
+  allTracks.sort((a, b) => a.title.localeCompare(b.title, 'es', { sensitivity: 'base' }));
   visibleTracks = allTracks;
   renderClassificationFilter();
 
@@ -248,6 +269,12 @@ async function init() {
     filters.classifications.clear();
     els.searchInput.value = '';
     applyFilters();
+  });
+  els.autoplayToggle.addEventListener('click', () => {
+    if (autoplayMode) { setAutoplay(false); return; }
+    if (!visibleTracks.length) return;
+    setAutoplay(true);
+    selectTrack(visibleTracks[0].id);
   });
 
   window.addEventListener('resize', updateConnector);

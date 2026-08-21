@@ -55,7 +55,7 @@ export function createPlayer(container) {
     `);
   }
 
-  async function play(track, { autoplay = true } = {}) {
+  async function play(track, { autoplay = true, onEnded } = {}) {
     if (!track.youtubeId) { showNoLink(); return; }
     const token = ++requestToken;
     setContent(`<div class="cx-player-mount"><div id="${mountId}"></div></div>`);
@@ -69,6 +69,10 @@ export function createPlayer(container) {
         onError: (e) => {
           if (token !== requestToken) return;
           if (UNPLAYABLE_CODES.has(e.data)) showFallback(track);
+        },
+        onStateChange: (e) => {
+          if (token !== requestToken) return;
+          if (e.data === YT.PlayerState.ENDED && onEnded) onEnded();
         }
       }
     });
